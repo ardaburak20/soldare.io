@@ -620,8 +620,19 @@ function manageBots(room) {
   const bots = Object.values(room.players).filter(p => p.isBot);
   const aliveBots = bots.filter(b => b.alive).length;
 
+  // Remove all bots if no real players (save server resources)
+  if (realPlayers === 0 && bots.length > 0) {
+    for (const id in room.players) {
+      if (room.players[id].isBot) {
+        delete room.players[id];
+        console.log(`🤖 Bot removed from empty room ${room.code}`);
+      }
+    }
+    return;
+  }
+
   // Add bots if needed
-  if (realPlayers < MIN_PLAYERS_FOR_NO_BOTS) {
+  if (realPlayers < MIN_PLAYERS_FOR_NO_BOTS && realPlayers > 0) {
     const neededBots = MAX_BOTS - aliveBots;
     const usedNames = bots.map(b => b.name); // Track already used names
     const availableNames = BOT_NAMES.filter(name => !usedNames.includes(name));
@@ -646,7 +657,7 @@ function manageBots(room) {
     for (const id in room.players) {
       if (room.players[id].isBot) {
         delete room.players[id];
-        console.log(`🤖 Bot removed from room ${room.code}`);
+        console.log(`🤖 Bot removed from room ${room.code} (enough players)`);
       }
     }
   }
