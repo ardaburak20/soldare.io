@@ -585,7 +585,9 @@
   function updateRegionalPrices() {
     console.log('💰 Fetching regional prices...');
     
-    fetch('/api/get-regional-price')
+    const backendUrl = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : window.location.origin;
+    
+    fetch(`${backendUrl}/api/get-regional-price`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -620,8 +622,11 @@
       return;
     }
     
+    // Backend URL
+    const backendUrl = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : window.location.origin;
+    
     // Create order on server first (server will determine price from IP)
-    fetch('/api/create-xsolla-payment', {
+    fetch(`${backendUrl}/api/create-xsolla-payment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

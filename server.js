@@ -258,8 +258,8 @@ const MIN_PLAYERS_FOR_NO_BOTS = 5; // 5'ten az oyuncu varsa bot ekle
 const MAX_BOTS = 5; // Maksimum bot sayısı
 const BOT_NAMES = ['Michael', 'Adam', 'Jessica', 'Enes', 'Fatih', 'Soul', 'Walter', 'Ellie', 'Arda', 'Sophia'];
 const BOT_COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#fd79a8', '#00b894', '#fdcb6e', '#e17055', '#74b9ff'];
-const BOT_VISION_RANGE = 400; // Bot görüş mesafesi
-const BOT_SHOOT_RANGE = 350; // Bot ateş etme mesafesi
+const BOT_VISION_RANGE = 500; // Bot görüş mesafesi (artırıldı)
+const BOT_SHOOT_RANGE = 450; // Bot ateş etme mesafesi (artırıldı)
 
 // Room Management
 const rooms = {};
@@ -536,8 +536,8 @@ function updateBotAI(bot, room, dt) {
   if (!bot.alive || !bot.isBot) return;
 
   bot.botThinkTimer -= dt;
-  if (bot.botThinkTimer > 0) return; // Think every 0.5 seconds
-  bot.botThinkTimer = 0.5;
+  if (bot.botThinkTimer > 0) return; // Think every 0.3 seconds (faster thinking)
+  bot.botThinkTimer = 0.3;
 
   const neutrals = room.neutralSoldiers;
   const pickups = room.pickups;
@@ -565,7 +565,7 @@ function updateBotAI(bot, room, dt) {
     }
   }
 
-  // Find closest enemy
+  // Find closest enemy (more aggressive - prioritize enemies)
   let closestEnemy = null;
   let closestEnemyDist = Infinity;
   for (const id in players) {
@@ -578,15 +578,16 @@ function updateBotAI(bot, room, dt) {
     }
   }
 
-  // Decision making: Priority = Enemy > Pickup > Neutral
+  // MORE AGGRESSIVE: Attack if enemy within range
   if (closestEnemy && closestEnemyDist < BOT_SHOOT_RANGE) {
     // Attack enemy
     bot.botState = 'attack';
     bot.mouseX = closestEnemy.x;
     bot.mouseY = closestEnemy.y;
     bot.isShooting = true;
-  } else if (closestPickup && closestPickupDist < closestNeutralDist) {
-    // Collect pickup
+    bot.clickShoot = true; // Ensure shooting
+  } else if (closestPickup && (!closestNeutral || closestPickupDist < closestNeutralDist * 0.8)) {
+    // Collect pickup (prefer if much closer than neutral)
     bot.botState = 'collect';
     bot.mouseX = closestPickup.x;
     bot.mouseY = closestPickup.y;
@@ -598,17 +599,17 @@ function updateBotAI(bot, room, dt) {
     bot.mouseY = closestNeutral.y;
     bot.isShooting = false;
   } else {
-    // Explore randomly
+    // Explore randomly (more movement)
     bot.botState = 'explore';
-    if (Math.random() < 0.3) {
+    if (Math.random() < 0.5) { // Higher chance to change direction
       bot.mouseX = randRange(PAD, MAP_SIZE - PAD);
       bot.mouseY = randRange(PAD, MAP_SIZE - PAD);
     }
     bot.isShooting = false;
   }
 
-  // Auto reload when ammo low
-  if (bot.ammo <= 2 && !bot.isReloading && bot.weapon !== 'missile') {
+  // Auto reload when ammo low (more aggressive reload)
+  if (bot.ammo <= 3 && !bot.isReloading && bot.weapon !== 'missile') {
     bot.isReloading = true;
     bot.reloadTimer = WEAPONS[bot.weapon].reloadTime;
     bot.isShooting = false;
