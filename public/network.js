@@ -75,6 +75,18 @@ const Network = (() => {
     socket.on('roomFull', () => {
       if (onRoomFullCallback) onRoomFullCallback();
     });
+
+    socket.on('goldUpdate', (data) => {
+      // Live gold update during gameplay
+      if (onLoginSuccessCallback) {
+        onLoginSuccessCallback({
+          email: data.email || null,
+          highScore: data.highScore,
+          gold: data.totalGold,
+          missiles: data.missiles || 0
+        });
+      }
+    });
   }
 
   function googleLogin(credential) {

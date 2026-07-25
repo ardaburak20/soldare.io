@@ -1848,6 +1848,10 @@
     
     if (data.gold !== undefined) {
       document.getElementById('goldVal').textContent = data.gold;
+      // Update sessionStorage for guests (live update during gameplay)
+      if (isGuest && userEmail) {
+        sessionStorage.setItem('soldierIOGuestGold', data.gold);
+      }
     }
     
     loginScreen.classList.add('hidden');

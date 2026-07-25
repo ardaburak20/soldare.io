@@ -1590,6 +1590,13 @@ function gameLoop() {
             if (!highScores[enemyEmail].isGuest) {
               saveHighScores();
             }
+            
+            // Send goldUpdate event immediately (live update during game)
+            io.to(pid).emit('goldUpdate', {
+              earnedGold: finalGold,
+              totalGold: totalGold,
+              highScore: highScores[enemyEmail].highScore
+            });
           }
           
           // Send eliminated event only to real players
