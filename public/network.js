@@ -110,7 +110,7 @@ const Network = (() => {
   }
 
   function sendMouse(x, y) {
-    if (socket) socket.volatile.emit('mouseMove', { x, y });
+    if (socket) socket.volatile.emit('mouseMove', { x, y }); // volatile = skip if busy
   }
 
   function startShooting() {

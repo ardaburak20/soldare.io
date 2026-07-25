@@ -1719,7 +1719,7 @@ function gameLoop() {
   };
 
   for (const id in players) {
-    io.to(id).emit('gameState', state);
+    io.to(id).volatile.emit('gameState', state); // volatile = skip if network busy
   }
   } // End room loop
 }

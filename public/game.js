@@ -1909,7 +1909,7 @@
     }
 
     if (mouseSendInterval) clearInterval(mouseSendInterval);
-    mouseSendInterval = setInterval(sendMousePosition, 50);
+    mouseSendInterval = setInterval(sendMousePosition, 100); // 50ms → 100ms (daha az network trafiği)
   });
 
   Network.onState((state) => {
