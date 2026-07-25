@@ -1980,6 +1980,15 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
     
     console.log('📤 Sending to Xsolla (minimal):', JSON.stringify(JSON.parse(tokenData), null, 2));
     
+    const authString = `${XSOLLA_MERCHANT_ID}:${XSOLLA_API_KEY}`;
+    const authBase64 = Buffer.from(authString).toString('base64');
+    
+    console.log('🔐 Auth Debug:');
+    console.log('   Merchant ID:', XSOLLA_MERCHANT_ID);
+    console.log('   API Key:', XSOLLA_API_KEY?.substring(0, 10) + '...');
+    console.log('   Auth String Length:', authString.length);
+    console.log('   Base64 Length:', authBase64.length);
+    
     const options = {
       hostname: 'api.xsolla.com',
       port: 443,
@@ -1988,12 +1997,14 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': tokenData.length,
-        'Authorization': `Basic ${Buffer.from(`${XSOLLA_MERCHANT_ID}:${XSOLLA_API_KEY}`).toString('base64')}`
+        'Authorization': `Basic ${authBase64}`
       }
     };
     
     // Replace {MERCHANT_ID} in path
     options.path = options.path.replace('{MERCHANT_ID}', XSOLLA_MERCHANT_ID);
+    
+    console.log('📍 Request URL:', `https://${options.hostname}${options.path}`);
     
     const xsollaReq = https.request(options, (xsollaRes) => {
       let data = '';
