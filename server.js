@@ -2003,6 +2003,8 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
       }
     });
     
+    console.log('📤 Sending to Xsolla:', JSON.stringify(JSON.parse(tokenData), null, 2));
+    
     const options = {
       hostname: 'store.xsolla.com',
       port: 443,
@@ -2018,11 +2020,14 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
     const xsollaReq = https.request(options, (xsollaRes) => {
       let data = '';
       
+      console.log(`📡 Xsolla response status: ${xsollaRes.statusCode}`);
+      
       xsollaRes.on('data', (chunk) => {
         data += chunk;
       });
       
       xsollaRes.on('end', () => {
+        console.log('📦 Xsolla raw response:', data);
         try {
           const response = JSON.parse(data);
           
@@ -2030,11 +2035,12 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
             console.log('✅ Xsolla token created:', response.token);
             res.json({ success: true, token: response.token });
           } else {
-            console.error('❌ Xsolla error:', response);
-            res.status(400).json({ success: false, error: response.message || 'Token creation failed' });
+            console.error('❌ Xsolla error response:', JSON.stringify(response, null, 2));
+            res.status(400).json({ success: false, error: response.message || 'Token creation failed', details: response });
           }
         } catch (err) {
           console.error('❌ JSON parse error:', err);
+          console.error('❌ Raw data:', data);
           res.status(500).json({ success: false, error: 'Invalid response from Xsolla' });
         }
       });
