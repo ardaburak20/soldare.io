@@ -1772,6 +1772,9 @@ XSOLLA_MERCHANT_ID = process.env.XSOLLA_MERCHANT_ID || XSOLLA_MERCHANT_ID;
 XSOLLA_API_KEY = process.env.XSOLLA_API_KEY || XSOLLA_API_KEY;
 
 console.log('💳 Xsolla configured:', XSOLLA_PROJECT_ID !== 'YOUR_XSOLLA_PROJECT_ID' ? '✅' : '❌');
+console.log('🔑 Xsolla Project ID:', XSOLLA_PROJECT_ID);
+console.log('🔑 Xsolla Merchant ID:', XSOLLA_MERCHANT_ID);
+console.log('🔑 Xsolla API Key:', XSOLLA_API_KEY ? XSOLLA_API_KEY.substring(0, 10) + '...' : 'NOT SET');
 
 // Regional Pricing System
 const REGIONAL_PRICES = {
@@ -2039,6 +2042,12 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
     
     xsollaReq.on('error', (err) => {
       console.error('❌ Xsolla request error:', err);
+      console.error('❌ Xsolla config check:', { 
+        PROJECT_ID: XSOLLA_PROJECT_ID, 
+        MERCHANT_ID: XSOLLA_MERCHANT_ID, 
+        API_KEY_SET: !!XSOLLA_API_KEY,
+        API_KEY_LENGTH: XSOLLA_API_KEY?.length 
+      });
       res.status(500).json({ success: false, error: err.message });
     });
     
