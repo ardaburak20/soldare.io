@@ -219,8 +219,12 @@ try {
 } catch (e) {
   console.log('No config.json found.');
 }
-const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID || '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com';
+
+// Environment variable has priority
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || config.GOOGLE_CLIENT_ID || '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com';
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+console.log('🔑 Google Client ID loaded:', GOOGLE_CLIENT_ID ? '✅ Valid' : '❌ Missing');
 
 // Serve the client ID to the frontend
 app.get('/config.js', (req, res) => {
