@@ -22,10 +22,12 @@ const Network = (() => {
     const backendUrl = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : window.location.origin;
     console.log('🔌 Connecting to backend:', backendUrl);
     socket = io(backendUrl, { 
-      transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
+      transports: ['websocket', 'polling'], // WebSocket öncelikli (polling fallback)
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5
+      reconnectionAttempts: 5,
+      upgrade: false, // Direkt websocket kullan, upgrade yapma
+      rememberUpgrade: true
     });
 
     socket.on('joined', (data) => {

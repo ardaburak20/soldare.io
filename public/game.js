@@ -9,10 +9,16 @@
   const GRID_COLOR = '#1c1c32';
   
   // === Performance Optimization Settings ===
-  const MAX_PARTICLES = 50; // Limit explosion particles
-  const MAX_VISIBLE_ENTITIES = 200; // Limit rendered entities
-  const CULLING_MARGIN = 200; // Off-screen culling margin
-  const SKIN_CACHE_LIMIT = 100; // Limit skin canvas cache
+  const MAX_PARTICLES = 30; // Azaltıldı: 50 → 30
+  const MAX_VISIBLE_ENTITIES = 150; // Azaltıldı: 200 → 150
+  const CULLING_MARGIN = 300; // Artırıldı: daha erken cull et
+  const SKIN_CACHE_LIMIT = 50; // Azaltıldı: 100 → 50
+  const MAX_RENDER_FPS = 60; // FPS limiti
+  const INTERPOLATION_SMOOTHING = 0.2; // Client-side prediction
+  
+  // Frame throttling
+  let lastRenderTime = 0;
+  const minFrameTime = 1000 / MAX_RENDER_FPS;
   
   // Object pools for performance
   const bulletPool = [];
@@ -984,8 +990,8 @@
   function smooth(key, tx, ty, factor) {
     if (!smoothPositions[key]) smoothPositions[key] = { x: tx, y: ty };
     const p = smoothPositions[key];
-    p.x += (tx - p.x) * factor;
-    p.y += (ty - p.y) * factor;
+    p.x += (tx - p.x) * (factor * 1.5); // Daha hızlı interpolation (daha responsive)
+    p.y += (ty - p.y) * (factor * 1.5);
     return p;
   }
 
@@ -1909,7 +1915,7 @@
     }
 
     if (mouseSendInterval) clearInterval(mouseSendInterval);
-    mouseSendInterval = setInterval(sendMousePosition, 100); // 50ms → 100ms (daha az network trafiği)
+    mouseSendInterval = setInterval(sendMousePosition, 150); // 100ms → 150ms (daha az network)
   });
 
   Network.onState((state) => {
