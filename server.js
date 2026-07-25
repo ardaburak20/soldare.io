@@ -254,6 +254,12 @@ const MAX_PLAYERS = 50;
 const PAD = 200;
 const RECRUIT_RADIUS = 40;
 const MAX_ROOMS = 10000;
+const MIN_PLAYERS_FOR_NO_BOTS = 5; // 5'ten az oyuncu varsa bot ekle
+const MAX_BOTS = 5; // Maksimum bot sayısı
+const BOT_NAMES = ['Bot 1', 'Bot 2', 'Bot 3', 'Bot 4', 'Bot 5'];
+const BOT_COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'];
+const BOT_VISION_RANGE = 400; // Bot görüş mesafesi
+const BOT_SHOOT_RANGE = 350; // Bot ateş etme mesafesi
 
 // Room Management
 const rooms = {};
@@ -489,8 +495,18 @@ function createPlayer(id, name, color, skin) {
     storedPickup: null,
     maxSoldiers: 1, // Track max soldiers reached
     bonusDuration10s: 0,
-    goldMultiplier: 1
+    goldMultiplier: 1,
+    isBot: false // Bot flag
   };
+}
+
+function createBot(id, name, color) {
+  const bot = createPlayer(id, name, color, null);
+  bot.isBot = true;
+  bot.botTarget = null; // Current target (neutral, pickup, or enemy)
+  bot.botState = 'explore'; // States: explore, collect, attack
+  bot.botThinkTimer = 0;
+  return bot;
 }
 
 function respawnPlayer(player) {
@@ -511,6 +527,124 @@ function respawnPlayer(player) {
   player.weaponTimer = 0;
   player.alive = true;
   player.maxSoldiers = 1; // Reset max soldiers
+}
+
+// ==========================================
+//  BOT AI SYSTEM
+// ==========================================
+function updateBotAI(bot, room, dt) {
+  if (!bot.alive || !bot.isBot) return;
+
+  bot.botThinkTimer -= dt;
+  if (bot.botThinkTimer > 0) return; // Think every 0.5 seconds
+  bot.botThinkTimer = 0.5;
+
+  const neutrals = room.neutralSoldiers;
+  const pickups = room.pickups;
+  const players = room.players;
+
+  // Find closest neutral soldier
+  let closestNeutral = null;
+  let closestNeutralDist = Infinity;
+  for (const n of neutrals) {
+    const d = dist(bot, n);
+    if (d < BOT_VISION_RANGE && d < closestNeutralDist) {
+      closestNeutral = n;
+      closestNeutralDist = d;
+    }
+  }
+
+  // Find closest pickup
+  let closestPickup = null;
+  let closestPickupDist = Infinity;
+  for (const p of pickups) {
+    const d = dist(bot, p);
+    if (d < BOT_VISION_RANGE && d < closestPickupDist) {
+      closestPickup = p;
+      closestPickupDist = d;
+    }
+  }
+
+  // Find closest enemy
+  let closestEnemy = null;
+  let closestEnemyDist = Infinity;
+  for (const id in players) {
+    const enemy = players[id];
+    if (enemy.id === bot.id || !enemy.alive) continue;
+    const d = dist(bot, enemy);
+    if (d < BOT_VISION_RANGE && d < closestEnemyDist) {
+      closestEnemy = enemy;
+      closestEnemyDist = d;
+    }
+  }
+
+  // Decision making: Priority = Enemy > Pickup > Neutral
+  if (closestEnemy && closestEnemyDist < BOT_SHOOT_RANGE) {
+    // Attack enemy
+    bot.botState = 'attack';
+    bot.mouseX = closestEnemy.x;
+    bot.mouseY = closestEnemy.y;
+    bot.isShooting = true;
+  } else if (closestPickup && closestPickupDist < closestNeutralDist) {
+    // Collect pickup
+    bot.botState = 'collect';
+    bot.mouseX = closestPickup.x;
+    bot.mouseY = closestPickup.y;
+    bot.isShooting = false;
+  } else if (closestNeutral) {
+    // Collect neutral
+    bot.botState = 'collect';
+    bot.mouseX = closestNeutral.x;
+    bot.mouseY = closestNeutral.y;
+    bot.isShooting = false;
+  } else {
+    // Explore randomly
+    bot.botState = 'explore';
+    if (Math.random() < 0.3) {
+      bot.mouseX = randRange(PAD, MAP_SIZE - PAD);
+      bot.mouseY = randRange(PAD, MAP_SIZE - PAD);
+    }
+    bot.isShooting = false;
+  }
+
+  // Auto reload when ammo low
+  if (bot.ammo <= 2 && !bot.isReloading && bot.weapon !== 'missile') {
+    bot.isReloading = true;
+    bot.reloadTimer = WEAPONS[bot.weapon].reloadTime;
+    bot.isShooting = false;
+  }
+}
+
+function manageBots(room) {
+  const realPlayers = Object.values(room.players).filter(p => !p.isBot && p.alive).length;
+  const bots = Object.values(room.players).filter(p => p.isBot);
+  const aliveBots = bots.filter(b => b.alive).length;
+
+  // Add bots if needed
+  if (realPlayers < MIN_PLAYERS_FOR_NO_BOTS) {
+    const neededBots = MAX_BOTS - aliveBots;
+    for (let i = 0; i < neededBots; i++) {
+      const botIndex = bots.length + i;
+      if (botIndex >= MAX_BOTS) break;
+      
+      const botId = `bot_${room.code}_${botIndex}_${Date.now()}`;
+      const botName = BOT_NAMES[botIndex % BOT_NAMES.length];
+      const botColor = BOT_COLORS[botIndex % BOT_COLORS.length];
+      
+      room.players[botId] = createBot(botId, botName, botColor);
+      console.log(`🤖 Bot added to room ${room.code}: ${botName}`);
+    }
+  }
+
+  // Remove excess bots if enough real players
+  if (realPlayers >= MIN_PLAYERS_FOR_NO_BOTS && aliveBots > 0) {
+    for (const id in room.players) {
+      if (room.players[id].isBot) {
+        delete room.players[id];
+        console.log(`🤖 Bot removed from room ${room.code}`);
+      }
+    }
+  }
 }
 
 // ==========================================
@@ -987,10 +1121,18 @@ function gameLoop() {
     const neutralSoldiers = room.neutralSoldiers;
     const pickups = room.pickups;
 
+    // Manage bots (add/remove based on player count)
+    manageBots(room);
+
     // --- Update Players ---
     for (const id in players) {
       const p = players[id];
       if (!p.alive) continue;
+
+      // Update bot AI
+      if (p.isBot) {
+        updateBotAI(p, room, dt);
+      }
 
       // Main player body moves toward mouse
       const dx = p.mouseX - p.x;
@@ -1302,7 +1444,8 @@ function gameLoop() {
             let prevHighScore = 0;
             let totalGold = finalGold;
             
-            if (enemyEmail) {
+            // Only process high scores for real players
+            if (enemyEmail && !enemy.isBot) {
               if (!highScores[enemyEmail]) {
                 highScores[enemyEmail] = { highScore: 0, gold: 0, missiles: 0, isGuest: enemyEmail.startsWith('guest_') };
               }
@@ -1320,15 +1463,26 @@ function gameLoop() {
               }
             }
             
-            io.to(pid).emit('eliminated', { 
-              score: soldierCount, 
-              kills: enemyKills || 0, 
-              maxSoldiers: enemyMaxSoldiers || soldierCount,
-              isNewHighScore, 
-              highScore: enemyEmail ? highScores[enemyEmail].highScore : Math.max(prevHighScore, soldierCount), 
-              earnedGold: finalGold || 0, 
-              totalGold: totalGold || 0
-            });
+            // Send eliminated event only to real players
+            if (!enemy.isBot) {
+              io.to(pid).emit('eliminated', { 
+                score: soldierCount, 
+                kills: enemyKills || 0, 
+                maxSoldiers: enemyMaxSoldiers || soldierCount,
+                isNewHighScore, 
+                highScore: enemyEmail ? highScores[enemyEmail].highScore : Math.max(prevHighScore, soldierCount), 
+                earnedGold: finalGold || 0, 
+                totalGold: totalGold || 0
+              });
+            } else {
+              // Bot respawn after 3 seconds
+              setTimeout(() => {
+                if (players[pid] && players[pid].isBot) {
+                  respawnPlayer(players[pid]);
+                  console.log(`🤖 Bot respawned: ${players[pid].name}`);
+                }
+              }, 3000);
+            }
             hit = true; break;
           }
         }
@@ -1402,7 +1556,8 @@ function gameLoop() {
           let prevHighScore = 0;
           let totalGold = finalGold;
           
-          if (enemyEmail) {
+          // Only process high scores for real players
+          if (enemyEmail && !enemy.isBot) {
             if (!highScores[enemyEmail]) {
               highScores[enemyEmail] = { highScore: 0, gold: 0, missiles: 0, isGuest: enemyEmail.startsWith('guest_') };
             }
@@ -1420,15 +1575,26 @@ function gameLoop() {
             }
           }
           
-          io.to(pid).emit('eliminated', { 
-            score: soldierCount, 
-            kills: enemyKills || 0, 
-            maxSoldiers: enemyMaxSoldiers || soldierCount,
-            isNewHighScore, 
-            highScore: enemyEmail ? highScores[enemyEmail].highScore : Math.max(prevHighScore, soldierCount), 
-            earnedGold: finalGold || 0, 
-            totalGold: totalGold || 0
-          });
+          // Send eliminated event only to real players
+          if (!enemy.isBot) {
+            io.to(pid).emit('eliminated', { 
+              score: soldierCount, 
+              kills: enemyKills || 0, 
+              maxSoldiers: enemyMaxSoldiers || soldierCount,
+              isNewHighScore, 
+              highScore: enemyEmail ? highScores[enemyEmail].highScore : Math.max(prevHighScore, soldierCount), 
+              earnedGold: finalGold || 0, 
+              totalGold: totalGold || 0
+            });
+          } else {
+            // Bot respawn after 3 seconds
+            setTimeout(() => {
+              if (players[pid] && players[pid].isBot) {
+                respawnPlayer(players[pid]);
+                console.log(`🤖 Bot respawned: ${players[pid].name}`);
+              }
+            }, 3000);
+          }
         }
       }
       bullets.splice(i, 1);
