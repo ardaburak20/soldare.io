@@ -1981,9 +1981,9 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
     console.log('📤 Sending to Xsolla (minimal):', JSON.stringify(JSON.parse(tokenData), null, 2));
     
     const options = {
-      hostname: 'store.xsolla.com',
+      hostname: 'api.xsolla.com',
       port: 443,
-      path: '/api/v2/paystation/createtoken',
+      path: '/merchant/v2/merchants/{MERCHANT_ID}/token',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1991,6 +1991,9 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
         'Authorization': `Basic ${Buffer.from(`${XSOLLA_MERCHANT_ID}:${XSOLLA_API_KEY}`).toString('base64')}`
       }
     };
+    
+    // Replace {MERCHANT_ID} in path
+    options.path = options.path.replace('{MERCHANT_ID}', XSOLLA_MERCHANT_ID);
     
     const xsollaReq = https.request(options, (xsollaRes) => {
       let data = '';
