@@ -1553,6 +1553,13 @@ try {
   console.log('⚠️ Xsolla config not found, using placeholder values');
 }
 
+// Environment variables have priority (for Render deployment)
+XSOLLA_PROJECT_ID = process.env.XSOLLA_PROJECT_ID || XSOLLA_PROJECT_ID;
+XSOLLA_MERCHANT_ID = process.env.XSOLLA_MERCHANT_ID || XSOLLA_MERCHANT_ID;
+XSOLLA_API_KEY = process.env.XSOLLA_API_KEY || XSOLLA_API_KEY;
+
+console.log('💳 Xsolla configured:', XSOLLA_PROJECT_ID !== 'YOUR_XSOLLA_PROJECT_ID' ? '✅' : '❌');
+
 // Regional Pricing System
 const REGIONAL_PRICES = {
   // Türkiye - TRY (Türk Lirası) - SENİN FİYATIN
