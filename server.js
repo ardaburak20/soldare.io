@@ -1968,47 +1968,22 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
     
     const tokenData = JSON.stringify({
       user: {
-        id: { value: email },
-        email: { value: email }
+        id: { value: email }
       },
       settings: {
         project_id: parseInt(XSOLLA_PROJECT_ID),
-        currency: item.currency,
-        language: 'tr',
-        return_url: `http://localhost:${PORT}`,
         ui: {
-          theme: 'dark',
           size: 'large'
         }
-      },
-      purchase: {
-        checkout: {
-          amount: item.price,
-          currency: item.currency
-        },
-        virtual_items: {
-          items: [{
-            sku: item.sku,
-            name: item.name,
-            description: item.description,
-            amount: 1,
-            price: item.price
-          }]
-        }
-      },
-      custom_parameters: {
-        email: email,
-        itemType: itemType,
-        orderId: orderId
       }
     });
     
-    console.log('📤 Sending to Xsolla:', JSON.stringify(JSON.parse(tokenData), null, 2));
+    console.log('📤 Sending to Xsolla (minimal):', JSON.stringify(JSON.parse(tokenData), null, 2));
     
     const options = {
       hostname: 'store.xsolla.com',
       port: 443,
-      path: '/api/v2/paystation/token',
+      path: '/api/v2/paystation/createtoken',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
