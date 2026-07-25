@@ -1,0 +1,924 @@
+/* ==========================================
+   SOLDARE.IO — Styles
+   ========================================== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background: #0a0a1a;
+  font-family: 'Montserrat', 'Segoe UI', sans-serif;
+  cursor: crosshair;
+  user-select: none;
+}
+
+/* === Purchase Notification === */
+#purchaseNotification {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(76, 175, 80, 0.95);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'Russo One', sans-serif;
+  font-size: 14px;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  margin-top: -15px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 2px solid #4caf50;
+}
+
+#purchaseNotification.visible {
+  opacity: 1;
+}
+
+/* === Canvas === */
+#gameCanvas {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* === Login Screen === */
+#loginScreen {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at center, #1e1e2f 0%, #12121f 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 110;
+}
+
+.login-method-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  min-height: 50px;
+  padding: 14px 24px;
+  margin: 8px auto;
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.05rem;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: transform 0.15s, box-shadow 0.3s;
+  box-sizing: border-box;
+}
+
+.login-method-btn:hover {
+  transform: scale(1.04);
+}
+
+.guest-login-btn {
+  background: linear-gradient(135deg, #78909c, #455a64);
+  box-shadow: 0 4px 20px rgba(120, 144, 156, 0.3);
+}
+
+.guest-login-btn:hover {
+  box-shadow: 0 0 30px rgba(120, 144, 156, 0.5);
+}
+
+/* Google Sign-In button override */
+#googleSignInBtn {
+  margin-bottom: 0 !important;
+}
+
+#googleSignInBtn > div {
+  width: 280px !important;
+  height: 50px !important;
+}
+
+#googleSignInBtn iframe {
+  width: 280px !important;
+  height: 50px !important;
+}
+
+.input-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 280px;
+  margin: 0 auto;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.3s, background 0.3s;
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  border-color: #4fc3f7;
+  background: rgba(79, 195, 247, 0.06);
+}
+
+.login-input::placeholder {
+  color: #555;
+}
+
+.login-submit-btn {
+  margin-top: 15px;
+  padding: 14px 24px;
+  font-family: 'Russo One', sans-serif;
+  background: linear-gradient(135deg, #4fc3f7, #0288d1);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 2px;
+  font-size: 1rem;
+  transition: transform 0.15s, box-shadow 0.3s;
+}
+
+.login-submit-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+}
+
+/* === Start Screen === */
+#startScreen {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at center, #1e1e2f 0%, #12121f 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 100;
+}
+
+#deathScreen {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 100;
+}
+
+.menu-box {
+  background: #1e1e2f;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 400px;
+}
+
+.start-container {
+  text-align: center;
+  animation: fadeInUp 0.8s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.game-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 5rem;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 40px rgba(100, 200, 255, 0.4), 0 0 80px rgba(100, 200, 255, 0.15);
+}
+
+.title-dot {
+  color: #4fc3f7;
+}
+
+.game-subtitle {
+  font-size: 1.3rem;
+  color: #8892b0;
+  margin-bottom: 40px;
+  letter-spacing: 3px;
+}
+
+.input-group {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+#nameInput {
+  width: 280px;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+#nameInput:focus {
+  border-color: #4fc3f7;
+  background: rgba(79, 195, 247, 0.06);
+}
+
+#nameInput::placeholder {
+  color: #555;
+}
+
+#playBtn {
+  padding: 14px 36px;
+  font-size: 1.2rem;
+  font-family: 'Russo One', sans-serif;
+  background: linear-gradient(135deg, #4fc3f7, #0288d1);
+  border: none;
+  border-radius: 0 8px 8px 0;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 3px;
+  transition: transform 0.15s, box-shadow 0.3s;
+}
+
+#playBtn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 25px rgba(79, 195, 247, 0.5);
+}
+
+.controls-info {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.control {
+  font-size: 0.95rem;
+  color: #5a6480;
+}
+
+.control .key {
+  margin-right: 6px;
+}
+
+/* === Top Bar (Email Dropdown + Lang) === */
+.top-bar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+
+.email-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.email-display {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.email-display:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.email-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: rgba(30,30,47,0.95);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+}
+
+.dropdown-item {
+  width: 100%;
+  background: transparent;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: rgba(255,82,82,0.2);
+  color: #ff5252;
+}
+
+.sign-in-btn {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sign-in-btn:hover {
+  background: rgba(79,195,247,0.2);
+  color: #4fc3f7;
+}
+
+#langSelect {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+#langSelect option {
+  background: #1a1a3e;
+  color: #fff;
+}
+
+/* === HUD Common === */
+.hud {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* === Leaderboard === */
+#topCenterHud {
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+  background: rgba(10, 10, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 24px;
+  backdrop-filter: blur(12px);
+}
+
+.top-stat {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.2rem;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.top-stat span:first-child {
+  color: #ffd740;
+}
+
+#leaderboard {
+  top: 16px;
+  right: 16px;
+  width: 220px;
+  background: rgba(10, 10, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  backdrop-filter: blur(12px);
+}
+
+.lb-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1rem;
+  color: #ffd740;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 0.88rem;
+  color: #ccc;
+}
+
+.lb-row.me {
+  color: #fff;
+  font-weight: 700;
+}
+
+.lb-rank {
+  width: 20px;
+  text-align: right;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* === Customization Panel === */
+.toggle-custom-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  transition: background 0.2s;
+}
+
+.toggle-custom-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.customization-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.custom-tabs {
+  display: flex;
+  gap: 20px;
+  font-family: 'Montserrat', sans-serif;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.custom-tabs label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.customization-panel label[data-i18n] {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #ccc;
+  font-weight: 600;
+}
+
+.color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 150px;
+}
+
+.color-btn, .paint-btn, .color-btn-d, .paint-btn-d {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-btn:hover, .paint-btn:hover, .color-btn-d:hover, .paint-btn-d:hover {
+  transform: scale(1.1);
+}
+
+.color-btn.selected, .paint-btn.selected, .color-btn-d.selected, .paint-btn-d.selected {
+  border-color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+#deathNameInput {
+  width: 280px;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.3s, background 0.3s;
+}
+#deathNameInput:focus {
+  border-color: #4fc3f7;
+  background: rgba(79, 195, 247, 0.06);
+}
+#deathNameInput::placeholder {
+  color: #555;
+}
+
+#respawnBtn {
+  padding: 14px 36px;
+  font-size: 1.2rem;
+  font-family: 'Russo One', sans-serif;
+  background: linear-gradient(135deg, #ff5252, #d32f2f);
+  border: none;
+  border-radius: 0 8px 8px 0;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 3px;
+  transition: transform 0.15s, box-shadow 0.3s;
+}
+#respawnBtn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 25px rgba(255, 82, 82, 0.5);
+}
+
+.death-action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.death-action-btn {
+  flex: 1;
+  max-width: 200px;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-family: 'Russo One', sans-serif;
+  background: linear-gradient(135deg, #78909c, #455a64);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  transition: transform 0.15s, box-shadow 0.3s;
+  text-align: center;
+}
+
+.death-action-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 20px rgba(120, 144, 156, 0.5);
+}
+
+#deathPixelEditor {
+  border: 2px solid rgba(255,255,255,0.2);
+  background: #fff;
+  cursor: crosshair;
+  border-radius: 4px;
+}
+
+#pixelEditor {
+  border: 2px solid rgba(255,255,255,0.2);
+  background: #fff;
+  cursor: crosshair;
+  border-radius: 4px;
+}
+
+.pixel-tools {
+  display: flex;
+  gap: 8px;
+}
+
+.pixel-tools button {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: 'Montserrat', sans-serif;
+}
+.pixel-tools button:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.lb-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lb-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-score {
+  font-weight: 700;
+  color: #ff5252;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* === Game HUD === */
+#bottomRightHud {
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.store-inventory-hud {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.weapon-slots-hud {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.weapon-slot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.store-slot {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d0d0d0; /* Light gray background */
+  border: 2px solid #ffd740;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.store-slot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  background: #e0e0e0; /* Slightly lighter on hover */
+}
+
+.store-slot.equipped {
+  border-color: #00e676;
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.35);
+  transform: translateY(-8px) scale(1.05);
+  background: #e8f5e8; /* Light green tint when equipped */
+}
+
+.store-slot.has-stored {
+  border-color: #4fc3f7;
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.35);
+  background: #e8f4f8; /* Light blue tint when has stored pickup */
+}
+
+.stored-pickup-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #4fc3f7;
+  color: #0d1b2a;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+.store-slot-count {
+  color: #ffd740;
+  font-family: 'Russo One', sans-serif;
+  font-size: 0.85rem;
+  text-shadow: 1px 1px 2px #000;
+  line-height: 1;
+}
+
+.store-item-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+#weaponHud {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  background: rgba(40, 40, 50, 0.9);
+  border: 2px solid rgba(220, 220, 220, 0.4);
+  border-radius: 12px;
+  padding: 16px 24px;
+  backdrop-filter: blur(12px);
+  text-align: center;
+  min-width: 250px;
+  pointer-events: auto;
+}
+
+#weaponName {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.2rem;
+  color: #eeeeee;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+#ammoBar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+#ammoFill {
+  height: 100%;
+  background: linear-gradient(90deg, #d3d3d3, #ffffff);
+  border-radius: 4px;
+  transition: width 0.15s ease;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+#ammoText {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  letter-spacing: 1px;
+}
+
+#reloadIndicator {
+  font-size: 0.85rem;
+  color: #ffd740;
+  margin-top: 4px;
+  animation: blink 0.6s ease infinite alternate;
+}
+
+@keyframes blink {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+
+#weaponTimer {
+  font-size: 0.8rem;
+  color: #ff9800;
+  margin-top: 4px;
+}
+
+/* === Shield HUD === */
+#shieldHud {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 200, 255, 0.15);
+  border: 1px solid rgba(0, 200, 255, 0.3);
+  border-radius: 10px;
+  padding: 8px 20px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shield-icon {
+  font-size: 1.3rem;
+}
+
+#shieldTimer {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.1rem;
+  color: #4fc3f7;
+}
+
+/* === Soldier Count === */
+#soldierCount {
+  bottom: 200px;
+  left: 20px;
+  background: rgba(10, 10, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 18px;
+  backdrop-filter: blur(12px);
+}
+
+#myCount {
+  font-family: 'Russo One', sans-serif;
+  font-size: 2rem;
+  color: #4fc3f7;
+}
+
+.count-label {
+  font-size: 0.9rem;
+  color: #8892b0;
+  margin-left: 4px;
+}
+
+/* === Eliminated Overlay === */
+#eliminatedOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(200, 0, 0, 0.15);
+  pointer-events: none;
+  animation: flashIn 0.3s ease;
+}
+
+@keyframes flashIn {
+  from { background: rgba(255, 0, 0, 0.4); }
+  to   { background: rgba(200, 0, 0, 0.15); }
+}
+
+.eliminated-text {
+  font-family: 'Russo One', sans-serif;
+  font-size: 4rem;
+  color: #ff1744;
+  letter-spacing: 4px;
+  text-shadow: 0 0 30px rgba(255, 23, 68, 0.6);
+  animation: pulseText 0.5s ease;
+}
+
+@keyframes pulseText {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}

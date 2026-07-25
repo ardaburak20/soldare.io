@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Soldare.IO - Multiplayer 2D top-down .io game">
+  <title>Soldare.IO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="/config.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Xsolla Pay Station Widget -->
+  <script src="https://static.xsolla.com/embed/paystation/1.2.3/widget.min.js"></script>
+  
+  <!-- Firebase Configuration -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAooP99cCcrSGf5Vkwsdi-g2ekrD3r1Ek4",
+      authDomain: "soldareio.firebaseapp.com",
+      projectId: "soldareio",
+      storageBucket: "soldareio.firebasestorage.app",
+      messagingSenderId: "461142915126",
+      appId: "1:461142915126:web:c27157cf1899ce09794097",
+      measurementId: "G-JJFCHN7G1K"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    
+    console.log('🔥 Firebase initialized');
+  </script>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen">
+    <div class="menu-box" style="text-align: center;">
+      <h1 class="game-title">SOLDARE<span class="title-dot">.IO</span></h1>
+      <p class="game-subtitle" data-i18n="subtitle">Build your army. Dominate the map.</p>
+      
+      <div id="loginButtonsSection" style="margin-top: 20px;">
+        <div id="googleSignInBtn" class="login-method-btn"></div>
+        
+        <button id="guestLoginBtn" class="login-method-btn guest-login-btn" data-i18n="guestLogin">👤 Misafir Girişi</button>
+      </div>
+
+      <div id="loginError" class="hidden" style="color: #ff5252; font-family: 'Montserrat', sans-serif; margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- Room Join Modal -->
+  <div id="roomModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;">
+    <div class="menu-box" style="text-align: center; background: rgba(40,40,40,0.95); border: 2px solid #4caf50; border-radius: 15px; padding: 30px; box-shadow: 0 0 30px rgba(76,175,80,0.3);">
+      <h1 class="game-title" style="color: #4caf50; font-size: 2rem; margin-bottom: 10px;" data-i18n="joinRoomTitle">ODAYA GİR</h1>
+      <p style="color: #fff; font-family: 'Montserrat', sans-serif; margin: 15px 0; font-size: 1.1rem;" data-i18n="roomCodePrompt">Oda kodunu girin (6 haneli sayı)</p>
+      
+      <div class="input-group" style="margin: 25px 0; display: flex; gap: 15px; justify-content: center; align-items: stretch;">
+        <input type="text" id="roomCodeInput" placeholder="000000" data-i18n-ph="roomCodePlaceholder" maxlength="6" autocomplete="off" spellcheck="false" style="text-align: center; font-size: 2rem; letter-spacing: 3px; font-family: 'Russo One', sans-serif; padding: 15px; border: 2px solid #4caf50; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; width: 200px;">
+        <button id="joinRoomBtn" style="background: #4caf50; color: white; padding: 15px 25px; border: none; border-radius: 8px; font-family: 'Russo One', sans-serif; font-size: 1.2rem; cursor: pointer; transition: background 0.3s;" data-i18n="joinRoomBtnText">GİR</button>
+      </div>
+      
+      <button id="closeRoomModalBtn" style="margin-top: 20px; background: #ff5252; color: white; padding: 12px 25px; border: none; border-radius: 8px; font-family: 'Russo One', sans-serif; cursor: pointer; transition: background 0.3s;" data-i18n="cancel">İPTAL</button>
+    </div>
+  </div>
+
+  <!-- Start Screen -->
+  <div id="startScreen" class="hidden">
+    <div class="top-bar">
+      <div id="emailDropdown" class="email-dropdown hidden">
+        <div class="email-display" id="emailDisplay">user@example.com</div>
+        <div class="email-dropdown-menu hidden" id="emailDropdownMenu">
+          <button id="signOutBtn" class="dropdown-item" data-i18n="signOut">Çıkış Yap</button>
+        </div>
+      </div>
+      <button id="signInBtn" class="sign-in-btn hidden" data-i18n="logIn">Log In</button>
+      <select id="langSelect">
+        <option value="en" selected>English</option>
+        <option value="ru">Русский</option>
+        <option value="de">Deutsch</option>
+        <option value="tr">Türkçe</option>
+        <option value="fr">Français</option>
+        <option value="zh">中文</option>
+      </select>
+    </div>
+    
+    <!-- Gold Display -->
+    <div id="goldDisplay" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #ffd740; font-family: 'Russo One', sans-serif; font-size: 1.5rem; display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 20px; border: 1px solid #ffd740;">
+      <span style="font-size: 1.2rem;">🪙</span> <span id="goldVal">0</span>
+    </div>
+
+    <div class="start-container">
+      <h1 class="game-title">SOLDARE<span class="title-dot">.IO</span></h1>
+      <p class="game-subtitle" data-i18n="subtitle">Ordunu kur. Haritaya hükmet.</p>
+
+      <div class="input-group" style="display: flex; justify-content: center; align-items: stretch;">
+        <input type="text" id="nameInput" placeholder="İsmini gir..." data-i18n-ph="placeholder" maxlength="16" autocomplete="off" spellcheck="false" style="width: 200px; padding: 15px; border: 2px solid #4caf50; border-radius: 8px 0 0 8px; background: rgba(255,255,255,0.1); color: white; outline: none;">
+        <button id="playBtn" data-i18n="play" style="background: #4caf50; color: white; padding: 15px 25px; border: none; border-radius: 0; font-family: 'Russo One', sans-serif; font-size: 1rem; cursor: pointer; transition: background 0.3s;">OYNA</button>
+        <button id="openRoomModalBtn" data-i18n="joinRoom" style="background: #ff9800; color: white; padding: 15px 20px; border: none; border-radius: 0 8px 8px 0; font-family: 'Russo One', sans-serif; font-size: 1rem; cursor: pointer; transition: background 0.3s;">ODAYA GİR</button>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
+        <button id="toggleCustomBtn" class="toggle-custom-btn" data-i18n="customizeBtn">Skin & Renk Özelleştir</button>
+        <button id="toggleStoreBtn" class="toggle-custom-btn" data-i18n="store">Mağaza</button>
+      </div>
+
+      <div class="panels-container" style="display: flex; justify-content: center; gap: 20px; align-items: flex-start;">
+        <div class="customization-panel hidden" id="customizationPanel">
+        <div class="custom-tabs">
+          <label><input type="radio" name="customMode" value="color" checked> <span data-i18n="justColor">Sadece Renk</span></label>
+          <label><input type="radio" name="customMode" value="skin"> <span data-i18n="drawSkinRadio">Skin Çiz</span></label>
+        </div>
+
+        <div id="colorModeWrap" class="mode-wrap">
+          <label data-i18n="color">Renk Seç:</label>
+          <div class="color-palette" id="colorPalette">
+            <button class="color-btn" style="background-color: #ff3333" data-color="#ff3333"></button>
+            <button class="color-btn" style="background-color: #ffeb3b" data-color="#ffeb3b"></button>
+            <button class="color-btn" style="background-color: #ff9800" data-color="#ff9800"></button>
+            <button class="color-btn" style="background-color: #4caf50" data-color="#4caf50"></button>
+            <button class="color-btn" style="background-color: #2196f3" data-color="#2196f3"></button>
+            <button class="color-btn" style="background-color: #ff99cc" data-color="#ff99cc"></button>
+            <button class="color-btn" style="background-color: #00bcd4" data-color="#00bcd4"></button>
+            <button class="color-btn" style="background-color: #ffffff" data-color="#ffffff"></button>
+          </div>
+        </div>
+        
+        <div id="skinModeWrap" class="mode-wrap hidden">
+          <label data-i18n="drawSkin">Askerini Boya (8x8):</label>
+          <div class="color-palette" id="skinPalette">
+            <button class="paint-btn selected" style="background-color: #ff3333" data-color="#ff3333"></button>
+            <button class="paint-btn" style="background-color: #ffeb3b" data-color="#ffeb3b"></button>
+            <button class="paint-btn" style="background-color: #ff9800" data-color="#ff9800"></button>
+            <button class="paint-btn" style="background-color: #4caf50" data-color="#4caf50"></button>
+            <button class="paint-btn" style="background-color: #2196f3" data-color="#2196f3"></button>
+            <button class="paint-btn" style="background-color: #ff99cc" data-color="#ff99cc"></button>
+            <button class="paint-btn" style="background-color: #00bcd4" data-color="#00bcd4"></button>
+            <button class="paint-btn" style="background-color: #ffffff" data-color="#ffffff"></button>
+          </div>
+          <canvas id="pixelEditor" width="64" height="64"></canvas>
+          <div class="pixel-tools">
+            <button id="clearSkinBtn" data-i18n="clear">Temizle</button>
+            <button id="eraserSkinBtn" data-i18n="eraser">Silgi</button>
+          </div>
+        </div> <!-- End of skinModeWrap -->
+        </div> <!-- End of customizationPanel -->
+        
+        <!-- Store Panel -->
+        <div class="store-panel hidden" id="storePanel" style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid #444; width: 700px; text-align: center;">
+          <h2 data-i18n="store" style="margin-top:0; color: #ffd740;">Mağaza</h2>
+          
+          <div style="display: flex; gap: 15px; justify-content: center;">
+            <!-- RPG Item -->
+            <div class="store-item" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; width: 200px;">
+              <div class="store-item-icon">
+                <svg viewBox="0 0 100 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <!-- Simplified RPG Icon based on reference image -->
+                  <path d="M4 14 L16 10 L16 30 L4 34 Z" fill="#b87850" stroke="#8a5a38" stroke-width="1"/>
+                  <path d="M6 16 L14 13 L14 27 L6 30 Z" fill="#c88860"/>
+                  
+                  <rect x="16" y="14" width="54" height="16" rx="8" fill="#b8b8b8" stroke="#888888" stroke-width="1.2"/>
+                  <rect x="17" y="15" width="52" height="14" rx="7" fill="#d8d8d8"/>
+                  <rect x="18" y="22" width="50" height="6" rx="3" fill="#7a7a7a" opacity="0.4"/>
+                  
+                  <path d="M70 20 L86 11 L94 20 L86 29 Z" fill="#4CAF50" stroke="#2d7a2d" stroke-width="1.2"/>
+                  <path d="M72 20 L86 13 L90 20 L86 27 Z" fill="#66BB6A"/>
+                  
+                  <path d="M86 15 L96 20 L86 25 Z" fill="#ff8844" stroke="#dd6622" stroke-width="0.8"/>
+                  <path d="M88 18 L94 20 L88 22 Z" fill="#ffaa66"/>
+                  
+                  <rect x="32" y="30" width="6" height="10" rx="3" fill="#8a8a8a" stroke="#6a6a6a" stroke-width="0.8"/>
+                  <rect x="33" y="31" width="4" height="8" rx="2" fill="#9a9a9a"/>
+                  
+                  <path d="M35 35 Q34 37 35 38" stroke="#5a5a5a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                  
+                  <rect x="24" y="18" width="2" height="8" rx="1" fill="#7a7a7a" opacity="0.6"/>
+                  <rect x="32" y="18" width="2" height="8" rx="1" fill="#7a7a7a" opacity="0.6"/>
+                </svg>
+              </div>
+              <div style="font-family: 'Russo One', sans-serif; font-size: 1.2rem; margin: 8px 0; color: #fff;" data-i18n="rpgName">RPG</div>
+              <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px;" data-i18n="rpgDesc">5 tek kullanımlık roket. Geniş alan hasarı.</div>
+              <button id="buyMissileBtn" class="play-btn" style="width: 100%; padding: 8px; font-size: 0.9rem; margin: 0; background: #ffd740; color: #000;" data-i18n="buyRpgPack">
+                Satın Al (100 🪙 · x5)
+              </button>
+            </div>
+
+            <!-- +10s Bonus Item -->
+            <div class="store-item" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; width: 200px;">
+              <div class="store-item-icon">
+                <svg viewBox="0 0 80 80" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <!-- Clock Icon -->
+                  <circle cx="40" cy="40" r="30" fill="#ffd740" stroke="#ff9800" stroke-width="3"/>
+                  <circle cx="40" cy="40" r="25" fill="#fff9e6"/>
+                  <!-- Clock hands -->
+                  <line x1="40" y1="40" x2="40" y2="25" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="40" y1="40" x2="52" y2="40" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="40" cy="40" r="3" fill="#333"/>
+                  <!-- +10 text -->
+                  <text x="40" y="65" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#ff6b00">+10s</text>
+                </svg>
+              </div>
+              <div style="font-family: 'Russo One', sans-serif; font-size: 1.2rem; margin: 8px 0; color: #fff;" data-i18n="bonusDurationName">+10 Süre</div>
+              <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px;" data-i18n="bonusDurationDesc">Kalkan ve silahlara +10sn ek süre.</div>
+              <div style="display: flex; gap: 5px; flex-direction: column;">
+                <button id="buyBonusDurationBtn" class="play-btn" style="width: 100%; padding: 8px; font-size: 0.9rem; margin: 0; background: #ffd740; color: #000;" data-i18n="buyBonusDuration1h">
+                  1 Saatlik (100 🪙)
+                </button>
+                <button id="buyBonusDurationPermBtn" class="play-btn" style="width: 100%; padding: 8px; font-size: 0.9rem; margin: 0; background: #ffd740; color: #000;">
+                  <span data-i18n="permanent">Permanent</span> (<span id="bonusPriceText">$2.99</span>)
+                </button>
+              </div>
+            </div>
+
+            <!-- x2 Gold Item -->
+            <div class="store-item" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; width: 200px;">
+              <div class="store-item-icon">
+                <svg viewBox="0 0 80 80" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <!-- Gold Coin with x2 -->
+                  <circle cx="40" cy="40" r="30" fill="#ffd740" stroke="#ff9800" stroke-width="3"/>
+                  <circle cx="40" cy="40" r="22" fill="#fff9e6"/>
+                  <!-- x2 text -->
+                  <text x="40" y="48" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#ff6b00">x2</text>
+                  <!-- Star decoration -->
+                  <polygon points="40,15 42,22 50,22 44,27 46,35 40,30 34,35 36,27 30,22 38,22" fill="#ff9800"/>
+                </svg>
+              </div>
+              <div style="font-family: 'Russo One', sans-serif; font-size: 1.2rem; margin: 8px 0; color: #fff;" data-i18n="goldMultiplierName">x2 Altın</div>
+              <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px;" data-i18n="goldMultiplierDesc">Oyun sonunda 2 kat altın.</div>
+              <div style="display: flex; gap: 5px; flex-direction: column;">
+                <button id="buyGoldMultiplierBtn" class="play-btn" style="width: 100%; padding: 8px; font-size: 0.9rem; margin: 0; background: #ffd740; color: #000;" data-i18n="buyGoldMultiplier1h">
+                  1 Saatlik (50 🪙)
+                </button>
+                <button id="buyGoldMultiplierPermBtn" class="play-btn" style="width: 100%; padding: 8px; font-size: 0.9rem; margin: 0; background: #ffd740; color: #000;">
+                  <span data-i18n="permanent">Permanent</span> (<span id="goldPriceText">$2.99</span>)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="controls-info">
+        <div class="control"><span class="key">🖱️ <span data-i18n="mouse">Fare</span></span> <span data-i18n="moveAim">Hareket et & Nişan al</span></div>
+        <div class="control"><span class="key">🔘 <span data-i18n="click">Tıkla</span></span> <span data-i18n="shoot">Ateş et</span></div>
+        <div class="control"><span class="key">R <span data-i18n="reloadKey">Şarjör doldurma</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Death Screen (Square Modal) -->
+  <div id="deathScreen" class="hidden">
+    <div class="menu-box">
+      <h1 class="game-title" style="color: #ff5252;" data-i18n="eliminated">ELENDİN!</h1>
+      <div id="deathMaxSoldiers" style="color: #4fc3f7; font-family: 'Russo One', sans-serif; font-size: 1.8rem; margin-top: 10px;">
+        <span data-i18n="yourSoldiers">Your Soldiers</span>: <span id="deathMaxSoldiersVal">0</span>
+      </div>
+      <div id="deathKillCount" style="color: #ff5252; font-family: 'Russo One', sans-serif; font-size: 1.2rem; margin-top: 6px;">
+        <span data-i18n="killCount">Öldürme</span>: <span id="deathKillsVal">0</span>
+      </div>
+      <div id="deathGoldEarned" style="color: #ffd740; font-family: 'Russo One', sans-serif; font-size: 1.2rem; margin-top: 6px;">
+        +<span id="deathEarnedGoldVal">0</span> 🪙
+      </div>
+      <div id="deathHighScore" class="hidden" style="color: #ffd740; font-family: 'Russo One', sans-serif; font-size: 1.3rem; margin-top: 6px; animation: pulseText 0.5s ease;">
+        🏆 <span data-i18n="newHighScore">En Yüksek Skor!</span>
+      </div>
+      <div class="input-group" style="margin-top: 20px;">
+        <input type="text" id="deathNameInput" placeholder="İsmini gir..." data-i18n-ph="placeholder" maxlength="16" autocomplete="off" spellcheck="false">
+        <button id="respawnBtn" data-i18n="play">TEKRAR OYNA</button>
+      </div>
+      
+      <div class="death-action-buttons">
+        <button id="backToMenuBtn" class="death-action-btn" data-i18n="backToMenu">Ana Menüye Dön</button>
+        <button id="deathToggleCustomBtn" class="death-action-btn" data-i18n="customizeBtn">Skin & Renk Özelleştir</button>
+      </div>
+      
+      <div class="customization-panel hidden" id="deathCustomizationPanel">
+        <div class="custom-tabs">
+          <label><input type="radio" name="deathCustomMode" value="color" checked> <span data-i18n="justColor">Sadece Renk</span></label>
+          <label><input type="radio" name="deathCustomMode" value="skin"> <span data-i18n="drawSkinRadio">Skin Çiz</span></label>
+        </div>
+
+        <div id="deathColorModeWrap" class="mode-wrap">
+          <label data-i18n="color">Renk Seç:</label>
+          <div class="color-palette" id="deathColorPalette">
+            <button class="color-btn-d" style="background-color: #ff3333" data-color="#ff3333"></button>
+            <button class="color-btn-d" style="background-color: #ffeb3b" data-color="#ffeb3b"></button>
+            <button class="color-btn-d" style="background-color: #ff9800" data-color="#ff9800"></button>
+            <button class="color-btn-d" style="background-color: #4caf50" data-color="#4caf50"></button>
+            <button class="color-btn-d" style="background-color: #2196f3" data-color="#2196f3"></button>
+            <button class="color-btn-d" style="background-color: #ff99cc" data-color="#ff99cc"></button>
+            <button class="color-btn-d" style="background-color: #00bcd4" data-color="#00bcd4"></button>
+            <button class="color-btn-d" style="background-color: #ffffff" data-color="#ffffff"></button>
+          </div>
+        </div>
+        
+        <div id="deathSkinModeWrap" class="mode-wrap hidden">
+          <label data-i18n="drawSkin">Askerini Boya (8x8):</label>
+          <div class="color-palette" id="deathSkinPalette">
+            <button class="paint-btn-d selected" style="background-color: #ff3333" data-color="#ff3333"></button>
+            <button class="paint-btn-d" style="background-color: #ffeb3b" data-color="#ffeb3b"></button>
+            <button class="paint-btn-d" style="background-color: #ff9800" data-color="#ff9800"></button>
+            <button class="paint-btn-d" style="background-color: #4caf50" data-color="#4caf50"></button>
+            <button class="paint-btn-d" style="background-color: #2196f3" data-color="#2196f3"></button>
+            <button class="paint-btn-d" style="background-color: #ff99cc" data-color="#ff99cc"></button>
+            <button class="paint-btn-d" style="background-color: #00bcd4" data-color="#00bcd4"></button>
+            <button class="paint-btn-d" style="background-color: #ffffff" data-color="#ffffff"></button>
+          </div>
+          <canvas id="deathPixelEditor" width="64" height="64"></canvas>
+          <div class="pixel-tools">
+            <button id="deathClearSkinBtn" data-i18n="clear">Temizle</button>
+            <button id="deathEraserSkinBtn" data-i18n="eraser">Silgi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Purchase Notification -->
+  <div id="purchaseNotification">Satın Alındı!</div>
+
+  <!-- HUD Overlays -->
+  <div id="roomCodeHud" class="hud hidden" style="position: fixed; top: 10px; left: 10px; background: white; padding: 8px 14px; border-radius: 8px; z-index: 1000; border: 2px solid #333; box-shadow: 0 3px 8px rgba(0,0,0,0.3);">
+    <span id="roomCodeDisplay" style="font-family: 'Russo One', sans-serif; font-size: 1.26rem; color: black; font-style: italic; font-weight: bold; letter-spacing: 0.7px;">#000000</span>
+  </div>
+
+  <div id="topCenterHud" class="hud hidden">
+    <div class="top-stat"><span data-i18n="killCount">Öldürme</span>: <span id="topKillsVal">0</span></div>
+    <div class="top-stat"><span data-i18n="playersAlive">Hayatta</span>: <span id="topAliveVal">0</span></div>
+  </div>
+
+  <div id="leaderboard" class="hud hidden">
+    <div class="lb-title" data-i18n="leaderboard">🏆 SIRALAMA</div>
+    <div id="lbList"></div>
+  </div>
+
+  <div id="bottomRightHud" class="hud hidden">
+    <div id="weaponSlotsHud" class="weapon-slots-hud">
+      <div class="weapon-slot-wrap hidden" id="missileSlotWrap">
+        <button id="equipMissileBtn" class="store-slot" type="button" title="Roketatar">
+          <svg viewBox="0 0 100 48" width="34" height="34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Simplified RPG Icon -->
+            <path d="M4 14 L16 10 L16 30 L4 34 Z" fill="#b87850" stroke="#8a5a38" stroke-width="1"/>
+            <path d="M6 16 L14 13 L14 27 L6 30 Z" fill="#c88860"/>
+            
+            <rect x="16" y="14" width="54" height="16" rx="8" fill="#b8b8b8" stroke="#888888" stroke-width="1.2"/>
+            <rect x="17" y="15" width="52" height="14" rx="7" fill="#d8d8d8"/>
+            <rect x="18" y="22" width="50" height="6" rx="3" fill="#7a7a7a" opacity="0.4"/>
+            
+            <path d="M70 20 L86 11 L94 20 L86 29 Z" fill="#4CAF50" stroke="#2d7a2d" stroke-width="1.2"/>
+            <path d="M72 20 L86 13 L90 20 L86 27 Z" fill="#66BB6A"/>
+            
+            <path d="M86 15 L96 20 L86 25 Z" fill="#ff8844" stroke="#dd6622" stroke-width="0.8"/>
+            <path d="M88 18 L94 20 L88 22 Z" fill="#ffaa66"/>
+            
+            <rect x="32" y="30" width="6" height="10" rx="3" fill="#8a8a8a" stroke="#6a6a6a" stroke-width="0.8"/>
+            <rect x="33" y="31" width="4" height="8" rx="2" fill="#9a9a9a"/>
+            
+            <path d="M35 35 Q34 37 35 38" stroke="#5a5a5a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            
+            <rect x="24" y="18" width="2" height="8" rx="1" fill="#7a7a7a" opacity="0.6"/>
+            <rect x="32" y="18" width="2" height="8" rx="1" fill="#7a7a7a" opacity="0.6"/>
+          </svg>
+        </button>
+        <div id="missileCountText" class="store-slot-count">x<span id="missileCountVal">0</span></div>
+      </div>
+
+      <div class="weapon-slot-wrap">
+        <button id="equipRevolverBtn" class="store-slot" type="button" title="Current Weapon">
+          <div id="currentWeaponIcon" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            <!-- Revolver SVG (Default) -->
+            <svg viewBox="0 0 64 48" width="34" height="34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <!-- Simplified Revolver Icon -->
+              <rect x="32" y="18" width="28" height="4" rx="2" fill="#8a8a8a" stroke="#6a6a6a" stroke-width="0.8"/>
+              <rect x="33" y="18.5" width="26" height="3" rx="1.5" fill="#a8a8a8"/>
+              
+              <rect x="22" y="15" width="12" height="10" rx="2" fill="#3a3a3a" stroke="#2a2a2a" stroke-width="1"/>
+              <rect x="23" y="16" width="10" height="8" rx="1.5" fill="#4a4a4a"/>
+              <line x1="24" y1="17" x2="24" y2="23" stroke="#2a2a2a" stroke-width="0.5"/>
+              <line x1="26" y1="17" x2="26" y2="23" stroke="#2a2a2a" stroke-width="0.5"/>
+              <line x1="28" y1="17" x2="28" y2="23" stroke="#2a2a2a" stroke-width="0.5"/>
+              <line x1="30" y1="17" x2="30" y2="23" stroke="#2a2a2a" stroke-width="0.5"/>
+              <line x1="32" y1="17" x2="32" y2="23" stroke="#2a2a2a" stroke-width="0.5"/>
+              
+              <path d="M18 20 L22 20 L22 24 L18 30 L12 30 L12 24 Z" fill="#b8b8b8" stroke="#888888" stroke-width="0.8"/>
+              <path d="M13 24 L20 24 L20 26 L13 26 Z" fill="#c8c8c8"/>
+              
+              <ellipse cx="15" cy="27" rx="1.5" ry="2.5" fill="#5a5a5a" stroke="#3a3a3a" stroke-width="0.6"/>
+              
+              <rect x="8" y="25" width="8" height="16" rx="3" fill="#b87850" stroke="#8a5a38" stroke-width="1"/>
+              <rect x="9" y="26" width="6" height="14" rx="2.5" fill="#c88860"/>
+              <path d="M10 28 Q11 33 10 38" stroke="#a86840" stroke-width="0.6" fill="none"/>
+              <path d="M12 28 Q13 33 12 38" stroke="#a86840" stroke-width="0.6" fill="none"/>
+              <path d="M14 28 Q13.5 33 14 38" stroke="#a86840" stroke-width="0.6" fill="none"/>
+              
+              <path d="M20 13 L22 15 L20 17" stroke="#6a6a6a" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span id="storedPickupBadge" class="stored-pickup-badge hidden"></span>
+        </button>
+      </div>
+    </div>
+
+    <div id="weaponHud">
+      <div id="weaponName">REVOLVER</div>
+      <div id="ammoBar">
+        <div id="ammoFill"></div>
+      </div>
+      <div id="ammoText">6 / 6</div>
+      <div id="reloadIndicator" class="hidden" data-i18n="reloading">YENİDEN DOLDUR...</div>
+      <div id="weaponTimer" class="hidden"></div>
+    </div>
+  </div>
+
+  <div id="shieldHud" class="hud hidden">
+    <div class="shield-icon">🛡️</div>
+    <div id="shieldTimer">10.0s</div>
+  </div>
+
+  <div id="eliminatedOverlay" class="hidden">
+    <div class="eliminated-text" data-i18n="eliminated">ELENDİN!</div>
+  </div>
+
+  <div id="soldierCount" class="hud hidden">
+    <span id="myCount">1</span> <span class="count-label" data-i18n="soldiers">asker</span>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="network.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
