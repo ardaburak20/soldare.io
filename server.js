@@ -256,8 +256,8 @@ const RECRUIT_RADIUS = 40;
 const MAX_ROOMS = 10000;
 const MIN_PLAYERS_FOR_NO_BOTS = 5; // 5'ten az oyuncu varsa bot ekle
 const MAX_BOTS = 5; // Maksimum bot sayısı
-const BOT_NAMES = ['Bot 1', 'Bot 2', 'Bot 3', 'Bot 4', 'Bot 5'];
-const BOT_COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'];
+const BOT_NAMES = ['Michael', 'Adam', 'Jessica', 'Enes', 'Fatih', 'Soul', 'Walter', 'Ellie', 'Arda', 'Sophia'];
+const BOT_COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#fd79a8', '#00b894', '#fdcb6e', '#e17055', '#74b9ff'];
 const BOT_VISION_RANGE = 400; // Bot görüş mesafesi
 const BOT_SHOOT_RANGE = 350; // Bot ateş etme mesafesi
 
@@ -623,13 +623,18 @@ function manageBots(room) {
   // Add bots if needed
   if (realPlayers < MIN_PLAYERS_FOR_NO_BOTS) {
     const neededBots = MAX_BOTS - aliveBots;
+    const usedNames = bots.map(b => b.name); // Track already used names
+    const availableNames = BOT_NAMES.filter(name => !usedNames.includes(name));
+    
     for (let i = 0; i < neededBots; i++) {
-      const botIndex = bots.length + i;
-      if (botIndex >= MAX_BOTS) break;
+      if (availableNames.length === 0) break; // No more unique names
       
-      const botId = `bot_${room.code}_${botIndex}_${Date.now()}`;
-      const botName = BOT_NAMES[botIndex % BOT_NAMES.length];
-      const botColor = BOT_COLORS[botIndex % BOT_COLORS.length];
+      // Pick random name from available names
+      const randomIndex = Math.floor(Math.random() * availableNames.length);
+      const botName = availableNames.splice(randomIndex, 1)[0];
+      
+      const botId = `bot_${room.code}_${Date.now()}_${Math.random()}`;
+      const botColor = BOT_COLORS[Math.floor(Math.random() * BOT_COLORS.length)];
       
       room.players[botId] = createBot(botId, botName, botColor);
       console.log(`🤖 Bot added to room ${room.code}: ${botName}`);
