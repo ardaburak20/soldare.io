@@ -1972,6 +1972,7 @@ app.post('/api/create-xsolla-payment', async (req, res) => {
       },
       settings: {
         project_id: parseInt(XSOLLA_PROJECT_ID),
+        mode: 'sandbox',
         ui: {
           size: 'large'
         }
