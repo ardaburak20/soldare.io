@@ -234,7 +234,7 @@ const socketEmails = {};
 // ==========================================
 //  CONSTANTS
 // ==========================================
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Render uses process.env.PORT
 const MAP_SIZE = 10000; 
 const TICK_RATE = 20;
 const TICK_MS = 1000 / TICK_RATE;
