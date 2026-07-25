@@ -21,7 +21,12 @@ const Network = (() => {
     if (socket) return; // Don't reconnect
     const backendUrl = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : window.location.origin;
     console.log('🔌 Connecting to backend:', backendUrl);
-    socket = io(backendUrl, { transports: ['websocket', 'polling'] });
+    socket = io(backendUrl, { 
+      transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5
+    });
 
     socket.on('joined', (data) => {
       myId = data.id;
