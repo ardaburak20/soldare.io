@@ -7,6 +7,40 @@ const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { MongoClient } = require('mongodb');
+
+// MongoDB Configuration
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const DB_NAME = 'soldareio';
+let db = null;
+let usersCollection = null;
+
+// Connect to MongoDB
+async function connectMongoDB() {
+  try {
+    if (!MONGODB_URI.includes('localhost')) {
+      const client = new MongoClient(MONGODB_URI);
+      await client.connect();
+      db = client.db(DB_NAME);
+      usersCollection = db.collection('users');
+      console.log('✅ MongoDB connected!');
+      
+      // Create indexes
+      await usersCollection.createIndex({ email: 1 }, { unique: true });
+      return true;
+    } else {
+      console.log('⚠️ MongoDB URI not set, using file-based storage');
+      return false;
+    }
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.log('⚠️ Falling back to file-based storage');
+    return false;
+  }
+}
+
+// Start MongoDB connection
+const mongoConnected = connectMongoDB();
 
 // GeoIP for country detection (optional - falls back to USD if not available)
 let geoip;
@@ -60,6 +94,13 @@ const HIGH_SCORE_FILE = path.join(__dirname, 'highscores.json');
 let highScores = {};
 
 function loadHighScores() {
+  // MongoDB kullanılıyorsa dosyadan yükleme yapma
+  if (db) {
+    console.log('📊 Using MongoDB for user data');
+    return;
+  }
+  
+  // Fallback: File-based storage
   try {
     if (fs.existsSync(HIGH_SCORE_FILE)) {
       const data = JSON.parse(fs.readFileSync(HIGH_SCORE_FILE, 'utf8'));
@@ -77,7 +118,13 @@ function loadHighScores() {
   }
 }
 
-function saveHighScores() {
+async function saveHighScores() {
+  // MongoDB kullanılıyorsa dosyaya kaydetme
+  if (db) {
+    return; // MongoDB'ye zaten kaydediliyor
+  }
+  
+  // Fallback: File-based storage
   try {
     fs.writeFileSync(HIGH_SCORE_FILE, JSON.stringify(highScores, null, 2));
   } catch (e) {
@@ -85,10 +132,66 @@ function saveHighScores() {
   }
 }
 
+// Save user data to MongoDB
+async function saveUserData(email, data) {
+  if (!email || email.startsWith('guest_')) return;
+  
+  if (db && usersCollection) {
+    try {
+      await usersCollection.updateOne(
+        { email },
+        { 
+          $set: { 
+            ...data,
+            updatedAt: new Date()
+          }
+        },
+        { upsert: true }
+      );
+    } catch (err) {
+      console.error('❌ MongoDB saveUserData error:', err.message);
+    }
+  } else {
+    // Fallback: File-based storage
+    saveHighScores();
+  }
+}
+
 loadHighScores();
 
-function ensurePlayerSave(email) {
+async function ensurePlayerSave(email) {
   if (!email) return null;
+  
+  // MongoDB kullanılıyorsa
+  if (db && usersCollection) {
+    try {
+      let user = await usersCollection.findOne({ email });
+      if (!user) {
+        user = {
+          email,
+          highScore: 0,
+          gold: 0,
+          missiles: 0,
+          missileAmmo: 0,
+          bonusDuration10s: 0,
+          bonusDuration10sEndTime: null,
+          goldMultiplier: 1,
+          goldMultiplierEndTime: null,
+          permanentBonusDuration: false,
+          permanentGoldMultiplier: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await usersCollection.insertOne(user);
+        console.log(`👤 New user created in MongoDB: ${email}`);
+      }
+      return user;
+    } catch (err) {
+      console.error('❌ MongoDB ensurePlayerSave error:', err.message);
+    }
+  }
+  
+  // Fallback: Memory-based storage
   if (!highScores[email]) {
     highScores[email] = { 
       highScore: 0, 
@@ -588,25 +691,43 @@ function updateBotAI(bot, room, dt) {
     }
   }
 
-  // Find closest enemy (more aggressive - prioritize enemies)
+  // Find closest enemy (more aggressive - prioritize enemies + their soldiers)
   let closestEnemy = null;
   let closestEnemyDist = Infinity;
+  let targetX = 0;
+  let targetY = 0;
+  
   for (const id in players) {
     const enemy = players[id];
     if (enemy.id === bot.id || !enemy.alive) continue;
+    
+    // Check main player body
     const d = dist(bot, enemy);
     if (d < BOT_VISION_RANGE && d < closestEnemyDist) {
       closestEnemy = enemy;
       closestEnemyDist = d;
+      targetX = enemy.x;
+      targetY = enemy.y;
+    }
+    
+    // Check enemy soldiers too!
+    for (const soldier of enemy.soldiers) {
+      const sd = dist(bot, soldier);
+      if (sd < BOT_VISION_RANGE && sd < closestEnemyDist) {
+        closestEnemy = enemy;
+        closestEnemyDist = sd;
+        targetX = soldier.x;
+        targetY = soldier.y;
+      }
     }
   }
 
   // MORE AGGRESSIVE: Attack if enemy within range
   if (closestEnemy && closestEnemyDist < BOT_SHOOT_RANGE) {
-    // Attack enemy
+    // Attack enemy or their soldiers
     bot.botState = 'attack';
-    bot.mouseX = closestEnemy.x;
-    bot.mouseY = closestEnemy.y;
+    bot.mouseX = targetX;
+    bot.mouseY = targetY;
     bot.isShooting = true;
     bot.clickShoot = true; // Ensure shooting
   } else if (closestPickup && (!closestNeutral || closestPickupDist < closestNeutralDist * 0.8)) {

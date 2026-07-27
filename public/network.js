@@ -19,7 +19,7 @@ const Network = (() => {
 
   function connect() {
     if (socket) return; // Don't reconnect
-    const backendUrl = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : window.location.origin;
+    const backendUrl = typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : 'http://YOUR_DROPLET_IP:3000'; // IP'ni buraya yaz!
     console.log('🔌 Connecting to backend:', backendUrl);
     socket = io(backendUrl, { 
       transports: ['websocket', 'polling'], // WebSocket öncelikli (polling fallback)
